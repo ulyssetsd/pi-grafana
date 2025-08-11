@@ -5,7 +5,7 @@ Complete monitoring stack for Raspberry Pi using Grafana, Prometheus, and Node E
 ## ✅ Live Setup
 
 - **Grafana Dashboard**: http://raspberrypi.local:3000
-- **Prometheus**: http://raspberrypi.local:9090
+- **Prometheus**: http://raspberrypi.local:9090 (http://prometheus:9090)
 - **Node Exporter**: http://raspberrypi.local:9100/metrics
 
 **Login**: admin / [your custom password]
