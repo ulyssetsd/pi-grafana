@@ -17,7 +17,7 @@ Complete monitoring stack for Raspberry Pi using Grafana, Prometheus, and Node E
 ## Management Commands
 
 ```bash
-cd /home/ulysse/code/pi-monitoring
+cd /home/ulysse/code/pi-grafana
 
 # Start/restart
 docker-compose up -d
@@ -31,6 +31,10 @@ docker-compose logs -f
 # Check status
 docker-compose ps
 ```
+
+## Data Retention
+
+Prometheus keeps metrics for **90 days** or **10GB** (whichever comes first).
 
 ## What's Monitored
 
