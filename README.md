@@ -1,6 +1,6 @@
 # Raspberry Pi Monitoring with Grafana
 
-Complete monitoring stack for Raspberry Pi using Grafana, Prometheus, and Node Exporter.
+Complete monitoring stack for Raspberry Pi using Grafana, Prometheus, and Node Exporter with **automatic data source provisioning**.
 
 ## ✅ Live Setup
 
@@ -8,11 +8,21 @@ Complete monitoring stack for Raspberry Pi using Grafana, Prometheus, and Node E
 - **Prometheus**: http://raspberrypi.local:9090 (http://prometheus:9090)
 - **Node Exporter**: http://raspberrypi.local:9100/metrics
 
-**Login**: admin / [your custom password]
+**Recommended Dashboards to Import**:
+- **Dashboard 1860** (Node Exporter Full) - Comprehensive system metrics
+- **Dashboard 11074** (Raspberry Pi Monitoring) - Specialized Pi monitoring
 
-**Dashboards Imported**:
-- Dashboard 1860 (Node Exporter Full)
-- Dashboard 11074 (Raspberry Pi Monitoring)
+## 📊 Dashboard Import (One-time setup)
+
+After starting the containers:
+
+1. Go to http://raspberrypi.local:3000
+2. Click **"+" → "Import"**
+3. Enter dashboard ID: **1860** → Select "Prometheus" data source → Import
+4. Click **"+" → "Import"** again  
+5. Enter dashboard ID: **11074** → Select "Prometheus" data source → Import
+
+**That's it!** Your dashboards are now linked to Grafana.com and will show update notifications.
 
 ## Management Commands
 
