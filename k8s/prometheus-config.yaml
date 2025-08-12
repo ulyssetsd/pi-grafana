@@ -13,18 +13,12 @@ data:
         static_configs:
           - targets: ['localhost:9090']
       
-      # Raspberry Pi Host Metrics (real hardware metrics)
-      - job_name: 'raspberry-pi-host'
-        static_configs:
-          - targets: ['192.168.1.150:9101']
-        scrape_interval: 10s
-        metrics_path: /metrics
-        
-      # Kubernetes Node Exporter (cluster container metrics)  
-      - job_name: 'kubernetes-node-exporter'
+      # Raspberry Pi Node Exporter (provides real hardware metrics via hostNetwork)
+      - job_name: 'raspberry-pi'
         static_configs:
           - targets: ['node-exporter:9100']
-        scrape_interval: 15s
+        scrape_interval: 10s
+        metrics_path: /metrics
         
       # Kubernetes Pod Discovery
       - job_name: 'kubernetes-pods'
