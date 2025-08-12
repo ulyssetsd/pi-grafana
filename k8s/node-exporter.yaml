@@ -3,6 +3,8 @@ kind: DaemonSet
 metadata:
   name: node-exporter
   namespace: monitoring
+  labels:
+    app: node-exporter
 spec:
   selector:
     matchLabels:
@@ -14,17 +16,43 @@ spec:
     spec:
       hostNetwork: true
       hostPID: true
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65534
+        fsGroup: 65534
       containers:
       - name: node-exporter
-        image: prom/node-exporter:latest
+        image: prom/node-exporter:v1.9.1
         args:
           - '--path.procfs=/host/proc'
           - '--path.rootfs=/host/root'
           - '--path.sysfs=/host/sys'
           - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
+          - '--web.listen-address=0.0.0.0:9100'
+          - '--log.level=info'
         ports:
         - containerPort: 9100
-          hostPort: 9100
+          protocol: TCP
+          name: http-metrics
+        livenessProbe:
+          httpGet:
+            path: /
+            port: http-metrics
+          initialDelaySeconds: 30
+          periodSeconds: 30
+        readinessProbe:
+          httpGet:
+            path: /
+            port: http-metrics
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        resources:
+          limits:
+            cpu: 250m
+            memory: 180Mi
+          requests:
+            cpu: 102m
+            memory: 180Mi
         volumeMounts:
         - name: proc
           mountPath: /host/proc
@@ -35,6 +63,7 @@ spec:
         - name: root
           mountPath: /host/root
           readOnly: true
+          mountPropagation: HostToContainer
       volumes:
       - name: proc
         hostPath:
@@ -53,9 +82,17 @@ kind: Service
 metadata:
   name: node-exporter
   namespace: monitoring
+  labels:
+    app: node-exporter
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "9100"
 spec:
+  type: ClusterIP
   selector:
     app: node-exporter
   ports:
   - port: 9100
-    targetPort: 9100
+    targetPort: http-metrics
+    protocol: TCP
+    name: http-metrics
