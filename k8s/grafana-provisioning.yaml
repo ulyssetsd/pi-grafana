@@ -12,3 +12,10 @@ data:
         access: proxy
         url: http://prometheus:9090
         isDefault: true
+        editable: false
+        jsonData:
+          httpMethod: POST
+          prometheusType: Prometheus
+          prometheusVersion: 2.40.0
+          queryTimeout: 60s
+          timeInterval: 15s

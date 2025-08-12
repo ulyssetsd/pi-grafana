@@ -25,7 +25,7 @@ spec:
         - name: grafana-data
           mountPath: /var/lib/grafana
         - name: grafana-provisioning
-          mountPath: /etc/grafana/provisioning
+          mountPath: /etc/grafana/provisioning/datasources
       volumes:
       - name: grafana-data
         persistentVolumeClaim:
