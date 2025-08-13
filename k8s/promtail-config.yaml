@@ -14,6 +14,14 @@ data:
 
     clients:
       - url: http://loki:3100/loki/api/v1/push
+        # Configuration de retry pour gérer les connexions temporaires
+        backoff_config:
+          min_period: 500ms
+          max_period: 5m
+          max_retries: 10
+        # Batch configuration pour optimiser l'envoi
+        batchsize: 1048576
+        batchwait: 1s
 
     scrape_configs:
       # Configuration pour collecter les logs des pods Kubernetes

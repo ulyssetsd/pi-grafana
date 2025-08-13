@@ -11,6 +11,14 @@ data:
       http_listen_port: 3100
       grpc_listen_port: 9096
 
+    # Enable query frontend for better performance
+    frontend:
+      enable_volume_range_queries: true
+      
+    # Enable pattern detection
+    pattern_ingester:
+      enabled: true
+
     common:
       path_prefix: /tmp/loki
       storage:
@@ -43,6 +51,14 @@ data:
     limits_config:
       allow_structured_metadata: false
       retention_period: 168h  # 7 days
+      # Enable volume and pattern APIs
+      volume_enabled: true
+      split_queries_by_interval: 15m
+
+    # Enable volume and pattern features
+    compactor:
+      working_directory: /tmp/loki/compactor
+      shared_store: filesystem
 
     ruler:
       alertmanager_url: http://localhost:9093
