@@ -12,6 +12,9 @@ spec:
     metadata:
       labels:
         app: prometheus
+      annotations:
+        # Force restart on config change for IaC
+        checksum/config: "kube-state-metrics-fqdn-v2"
     spec:
       serviceAccountName: prometheus
       containers:
