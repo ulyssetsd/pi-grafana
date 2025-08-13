@@ -1,52 +1,53 @@
-# Raspberry Pi Monitoring with Grafana
+# Raspberry Pi Monitoring Stack
 
-Complete Kubernetes-based monitoring and logging stack for Raspberry Pi using Grafana, Prometheus, Loki, and Node Exporter with **automatic data source provisioning**.
+Complete Kubernetes monitoring and logging infrastructure for Raspberry Pi using **Grafana, Prometheus, Loki, and Node Exporter** with GitOps deployment via **Flux**.
 
-## 🚀 Quick Start
+## 🚀 Features
 
-Deploy the monitoring stack to your Kubernetes cluster:
+✅ **Full Hardware Monitoring** - CPU, Memory, Disk, Network, Temperature  
+✅ **Kubernetes Cluster Monitoring** - Pods, Deployments, Services, Nodes  
+✅ **Complete Log Aggregation** - All pods and system logs via Loki  
+✅ **Auto Data Source Provisioning** - Grafana ready out-of-the-box  
+✅ **GitOps Ready** - Infrastructure as Code with Flux  
+✅ **Production Grade** - RBAC, Persistent Storage, Retention Policies
 
+## 📊 Recommended Dashboards
+
+After deployment, import these proven dashboards in Grafana:
+
+- **Dashboard 1860** - Node Exporter Full (hardware metrics)
+- **Dashboard 6417** - Kubernetes Pod Monitoring  
+- **Dashboard 8588** - Kubernetes Deployments
+- **Dashboard 315** - Kubernetes Cluster Overview (advanced)
+
+## � Quick Deploy
+
+### Option 1: Direct Kubernetes Apply
 ```bash
-# Apply all Kubernetes manifests
 kubectl apply -f k8s/
-
-# Check deployment status
 kubectl get pods -n monitoring
-kubectl get services -n monitoring
 ```
 
-## ✅ Live Setup
+### Option 2: GitOps with Flux (Recommended)
+```bash
+# Bootstrap Flux in your cluster
+flux bootstrap github --owner=ulyssetsd --repository=pi-grafana --branch=main --path=k8s
 
-After deployment, access your services:
+# Flux will automatically deploy and maintain the stack
+kubectl get kustomization -n flux-system
+```
 
-- **Grafana Dashboard**: https://grafana.ulyssetassidis.fr (or your configured domain)
-- **Prometheus**: http://prometheus.monitoring.svc.cluster.local:9090
-- **Loki**: http://loki.monitoring.svc.cluster.local:3100
-- **Node Exporter**: Available on each node at port 9100
+## 🔐 Access
 
-**Default Grafana Login**:
-- Username: `admin`
-- Password: `admin123` (⚠️ **Change this immediately in production!**)
+- **Grafana**: https://grafana.ulyssetassidis.fr (update in `grafana.yaml`)
+- **Default Login**: admin / admin123 ⚠️ *Change immediately!*
 
-## 📊 Dashboard Import (One-time setup)
+## 🛠️ Debugging
 
-After accessing Grafana:
-
-1. Go to your Grafana URL
-2. Click **"+" → "Import"**
-3. Enter dashboard ID: **1860** → Select "Prometheus" data source → Import
-4. Click **"+" → "Import"** again  
-5. Enter dashboard ID: **11074** → Select "Prometheus" data source → Import
-
-**That's it!** Your dashboards are now linked to Grafana.com and will show update notifications.
-
-## 📜 Log Exploration
-
-Access real-time logs from all your Kubernetes pods and system:
-
-1. Go to Grafana → **Explore**
-2. Select **Loki** as data source
-3. Use LogQL queries:
+Use the included diagnostic script:
+```bash
+./debug-dashboard-315.sh
+```
 
 ```logql
 # All logs from monitoring namespace
@@ -78,11 +79,44 @@ kubectl get all -n monitoring
 kubectl logs -f deployment/grafana -n monitoring
 kubectl logs -f deployment/prometheus -n monitoring
 
-# Scale components
-kubectl scale deployment grafana --replicas=2 -n monitoring
+## 📁 Stack Components
 
-# Delete the entire stack
-kubectl delete -f k8s/
+```
+k8s/
+├── namespace.yaml             # monitoring namespace
+├── prometheus-rbac.yaml       # RBAC for cluster-wide metrics
+├── prometheus-config.yaml     # scraping configuration  
+├── prometheus.yaml            # prometheus deployment
+├── grafana-provisioning.yaml  # auto data source config
+├── grafana.yaml              # grafana with ingress
+├── node-exporter.yaml        # hardware metrics collector
+├── kube-state-metrics.yaml   # kubernetes state metrics
+├── loki-config.yaml          # log storage configuration
+├── loki.yaml                 # loki deployment
+├── promtail-config.yaml      # log collection rules
+├── promtail.yaml             # log collection daemonset
+└── kustomization.yaml        # deployment manifest
+```
+
+## 🏷️ What's Monitored
+
+### Hardware (Node Exporter)
+- CPU usage, load, temperature
+- Memory, swap, disk usage  
+- Network interfaces, traffic
+- System uptime, processes
+
+### Kubernetes (kube-state-metrics)
+- Pod status, restarts, resources
+- Deployment replicas, conditions
+- Service endpoints, ingress
+- Node status, capacity
+
+### Logs (Promtail → Loki)
+- All pod logs with metadata
+- System logs (journal, syslog)
+- JSON parsing, log levels
+- 7-day retention, 10GB limit
 ```
 
 ## 🔧 Configuration

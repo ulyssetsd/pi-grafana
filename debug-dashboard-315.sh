@@ -1,34 +1,31 @@
 #!/bin/bash
 
-# Script de validation IaC pour debugging dashboard 315
+# Diagnostic script for monitoring stack
 
-echo "=== DIAGNOSTIC COMPLET DASHBOARD 315 ==="
+echo "🔍 PI GRAFANA MONITORING STACK DIAGNOSTIC"
+echo "=========================================="
 
-echo "1. État des pods monitoring:"
+echo "📊 Pod Status:"
 kubectl get pods -n monitoring
 
-echo -e "\n2. Services et leurs IPs:"
+echo -e "\n🔗 Service Status:" 
 kubectl get svc -n monitoring
 
-echo -e "\n3. Test connectivité kube-state-metrics:"
-kubectl exec -n monitoring $(kubectl get pod -n monitoring -l app=prometheus -o jsonpath='{.items[0].metadata.name}') -- nslookup kube-state-metrics 2>/dev/null || echo "DNS lookup failed"
-
-echo -e "\n4. Test métriques kube-state-metrics:"
-kubectl exec -n monitoring $(kubectl get pod -n monitoring -l app=prometheus -o jsonpath='{.items[0].metadata.name}') -- wget -q -O- http://kube-state-metrics:8080/metrics 2>/dev/null | head -3 || echo "Métriques non accessibles"
-
-echo -e "\n5. Configuration Prometheus (targets):"
+echo -e "\n🎯 Prometheus Targets Test:"
 kubectl port-forward -n monitoring svc/prometheus 9090:9090 &
 PF_PID=$!
 sleep 3
-curl -s http://localhost:9090/api/v1/targets 2>/dev/null | grep -o '"job":"[^"]*"' | sort | uniq || echo "Prometheus API non accessible"
+curl -s http://localhost:9090/api/v1/targets 2>/dev/null | grep -o '"job":"[^"]*"' | sort | uniq || echo "❌ Prometheus unreachable"
 kill $PF_PID 2>/dev/null
 
-echo -e "\n6. Exemple de métriques attendues par dashboard 315:"
-echo "   - kube_deployment_status_replicas"
-echo "   - kube_pod_info" 
-echo "   - kube_node_info"
+echo -e "\n📈 Sample Metrics Test:"
+echo "Testing key metrics for dashboards..."
+PROM_POD=$(kubectl get pod -n monitoring -l app=prometheus -o jsonpath='{.items[0].metadata.name}')
+kubectl exec -n monitoring $PROM_POD -- wget -q -O- http://node-exporter:9100/metrics 2>/dev/null | head -2 | grep -q "node_" && echo "✅ Node Exporter metrics OK" || echo "❌ Node Exporter metrics failed"
+kubectl exec -n monitoring $PROM_POD -- wget -q -O- http://kube-state-metrics.monitoring.svc.cluster.local:8080/metrics 2>/dev/null | head -2 | grep -q "kube_" && echo "✅ Kube-state-metrics OK" || echo "❌ Kube-state-metrics failed"
 
-echo -e "\n=== ACTIONS RECOMMANDÉES ==="
-echo "1. Si métriques accessibles mais pas dans Prometheus → Redémarrer Prometheus"
-echo "2. Si DNS fail → Problème service"
-echo "3. Si tout OK → Vérifier data source Grafana et time range"
+echo -e "\n💡 Recommended Actions:"
+echo "1. If all ✅ -> Import dashboard 1860 in Grafana"
+echo "2. If ❌ Node Exporter -> Check node-exporter pod logs"  
+echo "3. If ❌ Kube-state -> Check kube-state-metrics pod logs"
+echo "4. If ❌ Prometheus -> Check prometheus pod logs and config"
