@@ -12,3 +12,4 @@ resources:
 - loki.yaml
 - promtail-config.yaml
 - promtail.yaml
+- kube-state-metrics.yaml
