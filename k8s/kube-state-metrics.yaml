@@ -155,6 +155,9 @@ metadata:
     app.kubernetes.io/version: 2.10.0
   name: kube-state-metrics
   namespace: monitoring
+  annotations:
+    # Force recreation for IaC compliance
+    kustomize.toolkit.fluxcd.io/force: "true"
 spec:
   ports:
   - name: http-metrics

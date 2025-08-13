@@ -54,14 +54,9 @@ data:
           - action: labelmap
             regex: __meta_kubernetes_node_label_(.+)
             
-      # Kube-state-metrics
+      # Kube-state-metrics (IP fixe pour éviter problèmes DNS)
       - job_name: 'kube-state-metrics'
-        kubernetes_sd_configs:
-          - role: service
-        relabel_configs:
-          - source_labels: [__meta_kubernetes_service_name]
-            action: keep
-            regex: kube-state-metrics
-          - source_labels: [__meta_kubernetes_service_port_name]
-            action: keep
-            regex: http-metrics
+        static_configs:
+          - targets: ['kube-state-metrics.monitoring.svc.cluster.local:8080']
+        scrape_interval: 15s
+        metrics_path: /metrics
