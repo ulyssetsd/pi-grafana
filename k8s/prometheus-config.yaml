@@ -56,5 +56,12 @@ data:
             
       # Kube-state-metrics
       - job_name: 'kube-state-metrics'
-        static_configs:
-          - targets: ['kube-state-metrics:8080']
+        kubernetes_sd_configs:
+          - role: service
+        relabel_configs:
+          - source_labels: [__meta_kubernetes_service_name]
+            action: keep
+            regex: kube-state-metrics
+          - source_labels: [__meta_kubernetes_service_port_name]
+            action: keep
+            regex: http-metrics
