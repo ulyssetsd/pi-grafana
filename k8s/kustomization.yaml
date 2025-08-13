@@ -7,3 +7,7 @@ resources:
 - prometheus.yaml
 - node-exporter.yaml
 - grafana.yaml
+- loki-config.yaml
+- loki.yaml
+- promtail-config.yaml
+- promtail.yaml
