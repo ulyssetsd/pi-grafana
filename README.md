@@ -42,13 +42,6 @@ kubectl get kustomization -n flux-system
 - **Grafana**: https://grafana.ulyssetassidis.fr (update in `grafana.yaml`)
 - **Default Login**: admin / admin123 ⚠️ *Change immediately!*
 
-## 🛠️ Debugging
-
-Use the included diagnostic script:
-```bash
-./debug-dashboard-315.sh
-```
-
 ```logql
 # All logs from monitoring namespace
 {namespace="monitoring"}
