@@ -1,6 +1,6 @@
 # Raspberry Pi Monitoring with Grafana
 
-Complete Kubernetes-based monitoring stack for Raspberry Pi using Grafana, Prometheus, and Node Exporter with **automatic data source provisioning**.
+Complete Kubernetes-based monitoring and logging stack for Raspberry Pi using Grafana, Prometheus, Loki, and Node Exporter with **automatic data source provisioning**.
 
 ## 🚀 Quick Start
 
@@ -21,6 +21,7 @@ After deployment, access your services:
 
 - **Grafana Dashboard**: https://grafana.ulyssetassidis.fr (or your configured domain)
 - **Prometheus**: http://prometheus.monitoring.svc.cluster.local:9090
+- **Loki**: http://loki.monitoring.svc.cluster.local:3100
 - **Node Exporter**: Available on each node at port 9100
 
 **Default Grafana Login**:
@@ -38,6 +39,31 @@ After accessing Grafana:
 5. Enter dashboard ID: **11074** → Select "Prometheus" data source → Import
 
 **That's it!** Your dashboards are now linked to Grafana.com and will show update notifications.
+
+## 📜 Log Exploration
+
+Access real-time logs from all your Kubernetes pods and system:
+
+1. Go to Grafana → **Explore**
+2. Select **Loki** as data source
+3. Use LogQL queries:
+
+```logql
+# All logs from monitoring namespace
+{namespace="monitoring"}
+
+# Logs from specific pod
+{pod="prometheus-xxx"}
+
+# Filter by log level
+{namespace="monitoring"} |= "error"
+
+# Logs from all containers of an app
+{app="grafana"}
+
+# System logs
+{job="systemd-journal"}
+```
 
 ## 🛠️ Management Commands
 
@@ -69,14 +95,23 @@ kubectl delete -f k8s/
 ### Storage
 - **Grafana data**: 5GB persistent volume
 - **Prometheus data**: Retention for 90 days or 10GB (whichever comes first)
+- **Loki logs**: 10GB storage with 7-day retention
 
-## 📊 What's Monitored
+## 📊 What's Monitored & Logged
 
+### 📈 Metrics (Prometheus)
 - CPU usage and temperature
 - Memory and disk usage
 - Network traffic
 - System uptime
 - Process information
+
+### 📋 Logs (Loki)
+- **All Kubernetes pod logs** from every namespace
+- **System logs** (syslog, systemd journal)
+- **Container logs** with automatic JSON parsing
+- **Application logs** with structured metadata
+- **Real-time log streaming** and historical search
 
 ## 🔍 Troubleshooting
 
@@ -89,11 +124,15 @@ kubectl delete -f k8s/
 
 ```
 k8s/
-├── namespace.yaml          # Monitoring namespace
-├── grafana.yaml           # Grafana deployment, service, PVC, and ingress
-├── grafana-provisioning.yaml  # Prometheus data source configuration
-├── prometheus.yaml        # Prometheus deployment and service
-├── prometheus-config.yaml # Prometheus scraping configuration
-├── node-exporter.yaml    # Node exporter DaemonSet
-└── kustomization.yaml     # Kustomize configuration
+├── namespace.yaml             # Monitoring namespace
+├── grafana.yaml              # Grafana deployment, service, PVC, and ingress
+├── grafana-provisioning.yaml # Prometheus & Loki data source configuration
+├── prometheus.yaml           # Prometheus deployment and service
+├── prometheus-config.yaml    # Prometheus scraping configuration
+├── node-exporter.yaml       # Node exporter DaemonSet
+├── loki.yaml                 # Loki deployment and service
+├── loki-config.yaml          # Loki configuration
+├── promtail.yaml             # Promtail DaemonSet for log collection
+├── promtail-config.yaml      # Promtail scraping configuration
+└── kustomization.yaml        # Kustomize configuration
 ```
