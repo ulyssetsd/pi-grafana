@@ -15,10 +15,16 @@ Complete Kubernetes monitoring and logging infrastructure for Raspberry Pi using
 
 After deployment, import these proven dashboards in Grafana:
 
+### Hardware Monitoring
 - **Dashboard 1860** - Node Exporter Full (hardware metrics)
-- **Dashboard 6417** - Kubernetes Pod Monitoring  
-- **Dashboard 8588** - Kubernetes Deployments
-- **Dashboard 315** - Kubernetes Cluster Overview (advanced)
+- **Dashboard 11074** - [Node Exporter Dashboard EN 20201010-StarsL.cn](https://grafana.com/grafana/dashboards/11074)
+
+### Kubernetes Monitoring
+- **Dashboard 7249** - [Kubernetes Cluster](https://grafana.com/grafana/dashboards/7249)
+- **Dashboard 15661** - [K8S Dashboard EN](https://grafana.com/grafana/dashboards/15661)
+
+### Logs Monitoring
+- **Dashboard 14055** - [Loki Stack Monitoring (Promtail, Loki)](https://grafana.com/grafana/dashboards/14055)
 
 ## � Quick Deploy
 
