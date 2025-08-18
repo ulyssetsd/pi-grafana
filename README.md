@@ -1,19 +1,19 @@
 # Raspberry Pi Monitoring Stack
 
-Complete Kubernetes monitoring and logging infrastructure for Raspberry Pi using **Grafana, Prometheus, Loki, and Node Exporter** with GitOps deployment via **Flux**.
+Kubernetes monitoring and logging infrastructure for Raspberry Pi using Grafana, Prometheus, Loki, and Node Exporter with GitOps deployment via Flux.
 
-## 🚀 Features
+## Features
 
-✅ **Full Hardware Monitoring** - CPU, Memory, Disk, Network, Temperature  
-✅ **Kubernetes Cluster Monitoring** - Pods, Deployments, Services, Nodes  
-✅ **Complete Log Aggregation** - All pods and system logs via Loki  
-✅ **Auto Data Source Provisioning** - Grafana ready out-of-the-box  
-✅ **GitOps Ready** - Infrastructure as Code with Flux  
-✅ **Production Grade** - RBAC, Persistent Storage, Retention Policies
+- Full Hardware Monitoring (CPU, Memory, Disk, Network, Temperature)
+- Kubernetes Cluster Monitoring (Pods, Deployments, Services, Nodes)
+- Complete Log Aggregation (All pods and system logs via Loki)
+- Auto Data Source Provisioning (Grafana ready out-of-the-box)
+- GitOps Ready (Infrastructure as Code with Flux)
+- Production Grade (RBAC, Persistent Storage, Retention Policies)
 
-## 📊 Recommended Dashboards
+## Recommended Dashboards
 
-After deployment, import these proven dashboards in Grafana:
+Import these dashboards in Grafana after deployment:
 
 ### Hardware Monitoring
 - **Dashboard 1860** - Node Exporter Full (hardware metrics)
@@ -26,7 +26,7 @@ After deployment, import these proven dashboards in Grafana:
 ### Logs Monitoring
 - **Dashboard 14055** - [Loki Stack Monitoring (Promtail, Loki)](https://grafana.com/grafana/dashboards/14055)
 
-## � Quick Deploy
+## Quick Deploy
 
 ### Option 1: Direct Kubernetes Apply
 ```bash
@@ -38,34 +38,27 @@ kubectl get pods -n monitoring
 ```bash
 # Bootstrap Flux in your cluster
 flux bootstrap github --owner=ulyssetsd --repository=pi-grafana --branch=main --path=k8s
-
-# Flux will automatically deploy and maintain the stack
-kubectl get kustomization -n flux-system
 ```
 
-## 🔐 Access
+## Access
 
 - **Grafana**: https://grafana.ulyssetassidis.fr (update in `grafana.yaml`)
-- **Default Login**: admin / admin123 ⚠️ *Change immediately!*
+- **Default Login**: admin / admin123 (Change immediately!)
+
+## Log Queries Examples
 
 ```logql
 # All logs from monitoring namespace
 {namespace="monitoring"}
 
-# Logs from specific pod
-{pod="prometheus-xxx"}
-
 # Filter by log level
 {namespace="monitoring"} |= "error"
-
-# Logs from all containers of an app
-{app="grafana"}
 
 # System logs
 {job="systemd-journal"}
 ```
 
-## 🛠️ Management Commands
+## Management Commands
 
 ```bash
 # Deploy/update the stack
@@ -76,9 +69,9 @@ kubectl get all -n monitoring
 
 # View logs
 kubectl logs -f deployment/grafana -n monitoring
-kubectl logs -f deployment/prometheus -n monitoring
+```
 
-## 📁 Stack Components
+## Stack Components
 
 ```
 k8s/
@@ -97,75 +90,24 @@ k8s/
 └── kustomization.yaml        # deployment manifest
 ```
 
-## 🏷️ What's Monitored
+## What's Monitored
 
-### Hardware (Node Exporter)
-- CPU usage, load, temperature
-- Memory, swap, disk usage  
-- Network interfaces, traffic
-- System uptime, processes
+**Hardware (Node Exporter):**
+CPU usage, memory, disk, network, temperature, uptime
 
-### Kubernetes (kube-state-metrics)
-- Pod status, restarts, resources
-- Deployment replicas, conditions
-- Service endpoints, ingress
-- Node status, capacity
+**Kubernetes (kube-state-metrics):**
+Pod status, deployments, services, node capacity
 
-### Logs (Promtail → Loki)
-- All pod logs with metadata
-- System logs (journal, syslog)
-- JSON parsing, log levels
-- 7-day retention, 10GB limit
-```
+**Logs (Promtail → Loki):**
+All pod logs, system logs, JSON parsing, 7-day retention
 
-## 🔧 Configuration
+## Configuration
 
-### Security
-- **Change the default Grafana password** in `k8s/grafana.yaml`
-- **Configure TLS certificates** for the ingress (cert-manager setup included)
-- **Update the ingress hostname** in `k8s/grafana.yaml` to match your domain
+**Security:**
+- Change default Grafana password in `k8s/grafana.yaml`
+- Update ingress hostname in `k8s/grafana.yaml`
 
-### Storage
-- **Grafana data**: 5GB persistent volume
-- **Prometheus data**: Retention for 90 days or 10GB (whichever comes first)
-- **Loki logs**: 10GB storage with 7-day retention
-
-## 📊 What's Monitored & Logged
-
-### 📈 Metrics (Prometheus)
-- CPU usage and temperature
-- Memory and disk usage
-- Network traffic
-- System uptime
-- Process information
-
-### 📋 Logs (Loki)
-- **All Kubernetes pod logs** from every namespace
-- **System logs** (syslog, systemd journal)
-- **Container logs** with automatic JSON parsing
-- **Application logs** with structured metadata
-- **Real-time log streaming** and historical search
-
-## 🔍 Troubleshooting
-
-- **Can't access Grafana**: Check ingress configuration and DNS settings
-- **Pods not starting**: Run `kubectl describe pods -n monitoring` to see events
-- **Prometheus not scraping**: Verify node-exporter is running on target nodes
-- **Permission issues**: Ensure your cluster has proper RBAC permissions
-
-## 📁 Repository Structure
-
-```
-k8s/
-├── namespace.yaml             # Monitoring namespace
-├── grafana.yaml              # Grafana deployment, service, PVC, and ingress
-├── grafana-provisioning.yaml # Prometheus & Loki data source configuration
-├── prometheus.yaml           # Prometheus deployment and service
-├── prometheus-config.yaml    # Prometheus scraping configuration
-├── node-exporter.yaml       # Node exporter DaemonSet
-├── loki.yaml                 # Loki deployment and service
-├── loki-config.yaml          # Loki configuration
-├── promtail.yaml             # Promtail DaemonSet for log collection
-├── promtail-config.yaml      # Promtail scraping configuration
-└── kustomization.yaml        # Kustomize configuration
-```
+**Storage:**
+- Grafana: 5GB persistent volume
+- Prometheus: 90 days retention / 10GB limit
+- Loki: 10GB storage / 7-day retention
