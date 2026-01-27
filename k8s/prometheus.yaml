@@ -26,6 +26,13 @@ spec:
           - '--config.file=/etc/prometheus/prometheus.yml'
           - '--storage.tsdb.retention.time=90d'
           - '--storage.tsdb.retention.size=10GB'
+        resources:
+          requests:
+            cpu: 200m
+            memory: 512Mi
+          limits:
+            cpu: 1000m
+            memory: 1Gi
         volumeMounts:
         - name: prometheus-config
           mountPath: /etc/prometheus

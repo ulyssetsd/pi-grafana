@@ -21,6 +21,13 @@ spec:
         env:
         - name: GF_SECURITY_ADMIN_PASSWORD
           value: "admin123"  # Change this!
+        resources:
+          requests:
+            cpu: 100m
+            memory: 256Mi
+          limits:
+            cpu: 500m
+            memory: 512Mi
         volumeMounts:
         - name: grafana-data
           mountPath: /var/lib/grafana
