@@ -22,7 +22,7 @@ spec:
         runAsUser: 10001
       containers:
       - name: loki
-        image: grafana/loki:3.6.4 # {"$imagepolicy": "flux-system:loki"}
+        image: grafana/loki:3.6.4
         args:
           - -config.file=/etc/loki/loki.yml
         ports:
