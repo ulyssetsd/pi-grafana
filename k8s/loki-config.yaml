@@ -11,10 +11,6 @@ data:
       http_listen_port: 3100
       grpc_listen_port: 9096
 
-    # Enable query frontend for better performance
-    frontend:
-      enable_volume_range_queries: true
-      
     # Enable pattern detection
     pattern_ingester:
       enabled: true
@@ -58,7 +54,6 @@ data:
     # Enable volume and pattern features
     compactor:
       working_directory: /tmp/loki/compactor
-      shared_store: filesystem
 
     ruler:
       alertmanager_url: http://localhost:9093
