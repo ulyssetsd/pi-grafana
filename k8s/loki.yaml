@@ -34,12 +34,14 @@ spec:
           httpGet:
             path: /ready
             port: http-metrics
-          initialDelaySeconds: 45
+          initialDelaySeconds: 90
+          periodSeconds: 30
         readinessProbe:
           httpGet:
             path: /ready
             port: http-metrics
-          initialDelaySeconds: 45
+          initialDelaySeconds: 60
+          periodSeconds: 10
         resources:
           limits:
             cpu: 500m
