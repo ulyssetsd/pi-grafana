@@ -42,8 +42,8 @@ flux bootstrap github --owner=ulyssetsd --repository=pi-grafana --branch=main --
 
 ## Access
 
-- **Grafana**: https://grafana.ulyssetassidis.fr (update in `grafana.yaml`)
-- **Default Login**: admin / admin123 (Change immediately!)
+- **Grafana**: https://grafana.ulyssetassidis.fr
+- **Login**: Use credentials configured during first setup
 
 ## Log Queries Examples
 
@@ -103,9 +103,9 @@ All pod logs, system logs, JSON parsing, 7-day retention
 
 ## Configuration
 
-**Security:**
-- Change default Grafana password in `k8s/grafana.yaml`
-- Update ingress hostname in `k8s/grafana.yaml`
+**Customization:**
+- Update ingress hostname in `k8s/grafana.yaml` for your domain
+- Grafana admin password is set via environment variable in `k8s/grafana.yaml`
 
 **Storage:**
 - Grafana: 5GB persistent volume
