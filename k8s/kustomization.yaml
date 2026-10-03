@@ -7,9 +7,13 @@ resources:
 - grafana-provisioning.yaml
 - prometheus.yaml
 - node-exporter.yaml
+- alloy.yaml
 - grafana.yaml
 - loki-config.yaml
 - loki.yaml
-- promtail-config.yaml
-- promtail.yaml
 - kube-state-metrics.yaml
+configMapGenerator:
+- name: alloy-config
+  namespace: monitoring
+  files:
+  - config.alloy=alloy-config.alloy

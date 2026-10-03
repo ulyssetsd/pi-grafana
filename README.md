@@ -35,10 +35,8 @@ kubectl get pods -n monitoring
 ```
 
 ### Option 2: GitOps with Flux (Recommended)
-```bash
-# Bootstrap Flux in your cluster
-flux bootstrap github --owner=ulyssetsd --repository=pi-grafana --branch=main --path=k8s
-```
+
+This repository is reconciled by the `pi-grafana` Flux source declared in [`pi-aws`](https://github.com/ulyssetsd/pi-aws). Create the `monitoring/grafana-admin` Secret with key `admin-password` before applying the stack; the password is not stored in this repository.
 
 ## Access
 
@@ -85,8 +83,8 @@ k8s/
 ├── kube-state-metrics.yaml   # kubernetes state metrics
 ├── loki-config.yaml          # log storage configuration
 ├── loki.yaml                 # loki deployment
-├── promtail-config.yaml      # log collection rules
-├── promtail.yaml             # log collection daemonset
+├── alloy-config.alloy        # converted log collection rules
+├── alloy.yaml                # log collection daemonset
 └── kustomization.yaml        # deployment manifest
 ```
 
@@ -98,14 +96,14 @@ CPU usage, memory, disk, network, temperature, uptime
 **Kubernetes (kube-state-metrics):**
 Pod status, deployments, services, node capacity
 
-**Logs (Promtail → Loki):**
+**Logs (Grafana Alloy → Loki):**
 All pod logs, system logs, JSON parsing, 7-day retention
 
 ## Configuration
 
 **Customization:**
 - Update ingress hostname in `k8s/grafana.yaml` for your domain
-- Grafana admin password is set via environment variable in `k8s/grafana.yaml`
+- Grafana reads its admin password from the `monitoring/grafana-admin` Secret (`admin-password` key)
 
 **Storage:**
 - Grafana: 5GB persistent volume
