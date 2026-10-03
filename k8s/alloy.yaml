@@ -1,0 +1,128 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: alloy
+  namespace: monitoring
+  labels:
+    app: alloy
+spec:
+  selector:
+    matchLabels:
+      app: alloy
+  template:
+    metadata:
+      labels:
+        app: alloy
+    spec:
+      serviceAccountName: alloy
+      securityContext:
+        runAsUser: 0
+        runAsGroup: 0
+      containers:
+      - name: alloy
+        image: grafana/alloy:v1.20.1
+        args:
+        - run
+        - --server.http.listen-addr=0.0.0.0:12345
+        - --storage.path=/tmp/alloy
+        - /etc/alloy/config.alloy
+        env:
+        - name: HOSTNAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+        ports:
+        - containerPort: 12345
+          name: http
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 250m
+            memory: 256Mi
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+          readOnlyRootFilesystem: true
+        volumeMounts:
+        - name: config
+          mountPath: /etc/alloy
+          readOnly: true
+        - name: varlog
+          mountPath: /var/log
+          readOnly: true
+        - name: journal
+          mountPath: /var/log/journal
+          readOnly: true
+        - name: run-journal
+          mountPath: /run/log/journal
+          readOnly: true
+        - name: machine-id
+          mountPath: /etc/machine-id
+          readOnly: true
+        - name: storage
+          mountPath: /tmp/alloy
+      tolerations:
+      - operator: Exists
+      volumes:
+      - name: config
+        configMap:
+          name: alloy-config
+      - name: varlog
+        hostPath:
+          path: /var/log
+          type: Directory
+      - name: journal
+        hostPath:
+          path: /var/log/journal
+          type: DirectoryOrCreate
+      - name: run-journal
+        hostPath:
+          path: /run/log/journal
+          type: DirectoryOrCreate
+      - name: machine-id
+        hostPath:
+          path: /etc/machine-id
+          type: File
+      - name: storage
+        emptyDir: {}
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: alloy
+  namespace: monitoring
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: alloy
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - nodes
+  - nodes/proxy
+  - services
+  - endpoints
+  - pods
+  verbs:
+  - get
+  - watch
+  - list
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: alloy
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: alloy
+subjects:
+- kind: ServiceAccount
+  name: alloy
+  namespace: monitoring
