@@ -14,6 +14,7 @@ rules:
   resources:
   - nodes
   - nodes/proxy
+  - nodes/metrics  # the kubelet's /metrics and /metrics/cadvisor (403 without it)
   - services
   - endpoints
   - pods

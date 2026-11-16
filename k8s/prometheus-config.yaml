@@ -42,7 +42,8 @@ data:
             action: keep
             regex: default;kubernetes;https
             
-      # Kubernetes Nodes
+      # Kubernetes Nodes (kubelet): only the volumes' usage and the running pods and containers are
+      # kept — the kubelet's own histograms would cost the Pi's memory for nothing.
       - job_name: 'kubernetes-nodes'
         kubernetes_sd_configs:
           - role: node
@@ -53,6 +54,29 @@ data:
         relabel_configs:
           - action: labelmap
             regex: __meta_kubernetes_node_label_(.+)
+        metric_relabel_configs:
+          - source_labels: [__name__]
+            action: keep
+            regex: kubelet_(volume_stats_(capacity|used|available)_bytes|running_pods|running_containers|evictions)
+
+      # Containers' memory, CPU, disk and network (cAdvisor, inside the kubelet): which pod uses how
+      # much, and which one was killed for memory. Only the series read are kept.
+      - job_name: 'kubernetes-cadvisor'
+        kubernetes_sd_configs:
+          - role: node
+        scheme: https
+        metrics_path: /metrics/cadvisor
+        scrape_interval: 30s
+        tls_config:
+          ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+        bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+        relabel_configs:
+          - source_labels: [__meta_kubernetes_node_name]
+            target_label: node
+        metric_relabel_configs:
+          - source_labels: [__name__]
+            action: keep
+            regex: container_(memory_working_set_bytes|memory_rss|memory_cache|memory_swap|spec_memory_limit_bytes|oom_events_total|cpu_usage_seconds_total|cpu_cfs_throttled_periods_total|cpu_cfs_periods_total|fs_reads_bytes_total|fs_writes_bytes_total|network_receive_bytes_total|network_transmit_bytes_total)
             
       # Kube-state-metrics (IP fixe pour éviter problèmes DNS)
       - job_name: 'kube-state-metrics'
