@@ -5,6 +5,7 @@ resources:
 - prometheus-rbac.yaml
 - prometheus-config.yaml
 - grafana-provisioning.yaml
+- grafana-dashboard-provider.yaml
 - prometheus.yaml
 - node-exporter.yaml
 - alloy.yaml
@@ -17,3 +18,7 @@ configMapGenerator:
   namespace: monitoring
   files:
   - config.alloy=alloy-config.alloy
+- name: grafana-dashboards
+  namespace: monitoring
+  files:
+  - pi-node-containers.json=dashboards/pi-node-containers.json

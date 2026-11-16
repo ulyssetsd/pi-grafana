@@ -20,7 +20,9 @@ data:
         scrape_interval: 10s
         metrics_path: /metrics
         
-      # Kubernetes Pod Discovery
+      # Kubernetes Pod Discovery: the pods annotated prometheus.io/scrape, at the port and path their
+      # annotations give (every declared port was scraped: a dozen targets down for nothing — health
+      # probes, webhooks), with their namespace and pod as labels.
       - job_name: 'kubernetes-pods'
         kubernetes_sd_configs:
           - role: pod
@@ -28,6 +30,22 @@ data:
           - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
             action: keep
             regex: true
+          - source_labels: [__meta_kubernetes_pod_phase]
+            action: drop
+            regex: (Succeeded|Failed)
+          - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_path]
+            action: replace
+            regex: (.+)
+            target_label: __metrics_path__
+          - source_labels: [__address__, __meta_kubernetes_pod_annotation_prometheus_io_port]
+            action: replace
+            regex: ([^:]+)(?::\d+)?;(\d+)
+            replacement: $1:$2
+            target_label: __address__
+          - source_labels: [__meta_kubernetes_namespace]
+            target_label: namespace
+          - source_labels: [__meta_kubernetes_pod_name]
+            target_label: pod
             
       # Kubernetes API server
       - job_name: 'kubernetes-apiservers'

@@ -1,0 +1,640 @@
+{
+ "uid": "pi-node-containers",
+ "title": "Pi — nœud, k3s et conteneurs",
+ "tags": [
+  "pi",
+  "k3s"
+ ],
+ "timezone": "browser",
+ "schemaVersion": 39,
+ "version": 1,
+ "editable": false,
+ "refresh": "1m",
+ "time": {
+  "from": "now-24h",
+  "to": "now"
+ },
+ "templating": {
+  "list": [
+   {
+    "name": "ds_prom",
+    "label": "Prometheus",
+    "type": "datasource",
+    "query": "prometheus",
+    "current": {},
+    "hide": 0
+   },
+   {
+    "name": "ds_loki",
+    "label": "Loki",
+    "type": "datasource",
+    "query": "loki",
+    "current": {},
+    "hide": 0
+   }
+  ]
+ },
+ "panels": [
+  {
+   "type": "row",
+   "title": "Nœud : mémoire et disque",
+   "collapsed": false,
+   "gridPos": {
+    "h": 1,
+    "w": 24,
+    "x": 0,
+    "y": 0
+   },
+   "id": 1,
+   "panels": []
+  },
+  {
+   "type": "timeseries",
+   "title": "Mémoire du nœud",
+   "description": "Le zram plein et la mémoire disponible sous ~500 Mo : le noyau vide le cache disque, chaque lecture repart sur le disque.",
+   "id": 2,
+   "datasource": {
+    "type": "prometheus",
+    "uid": "${ds_prom}"
+   },
+   "gridPos": {
+    "h": 8,
+    "w": 12,
+    "x": 0,
+    "y": 1
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds_prom}"
+     },
+     "expr": "node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes",
+     "legendFormat": "utilisée"
+    },
+    {
+     "refId": "B",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds_prom}"
+     },
+     "expr": "node_memory_MemAvailable_bytes",
+     "legendFormat": "disponible"
+    },
+    {
+     "refId": "C",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds_prom}"
+     },
+     "expr": "node_memory_SwapTotal_bytes - node_memory_SwapFree_bytes",
+     "legendFormat": "zram utilisé (swap compressé en RAM)"
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "bytes",
+     "custom": {
+      "drawStyle": "line",
+      "fillOpacity": 10,
+      "lineWidth": 1,
+      "stacking": {
+       "mode": "none"
+      },
+      "showPoints": "never"
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "table",
+     "placement": "right",
+     "calcs": [
+      "lastNotNull",
+      "max"
+     ]
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   }
+  },
+  {
+   "type": "timeseries",
+   "title": "Disque occupé (%)",
+   "description": "Part du temps où le disque traite des requêtes. Proche de 100 % : la carte SD est saturée, k3s écrit lentement.",
+   "id": 3,
+   "datasource": {
+    "type": "prometheus",
+    "uid": "${ds_prom}"
+   },
+   "gridPos": {
+    "h": 8,
+    "w": 6,
+    "x": 12,
+    "y": 1
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds_prom}"
+     },
+     "expr": "100 * rate(node_disk_io_time_seconds_total{device=~\"mmcblk0|nvme0n1\"}[5m])",
+     "legendFormat": "{{device}}"
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "percent",
+     "custom": {
+      "drawStyle": "line",
+      "fillOpacity": 10,
+      "lineWidth": 1,
+      "stacking": {
+       "mode": "none"
+      },
+      "showPoints": "never"
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "table",
+     "placement": "right",
+     "calcs": [
+      "lastNotNull",
+      "max"
+     ]
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   }
+  },
+  {
+   "type": "timeseries",
+   "title": "Latence moyenne d'écriture",
+   "description": "Temps moyen d'une requête au disque : la mesure à comparer avant et après le passage au NVMe.",
+   "id": 4,
+   "datasource": {
+    "type": "prometheus",
+    "uid": "${ds_prom}"
+   },
+   "gridPos": {
+    "h": 8,
+    "w": 6,
+    "x": 18,
+    "y": 1
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds_prom}"
+     },
+     "expr": "rate(node_disk_write_time_seconds_total{device=~\"mmcblk0|nvme0n1\"}[5m]) / rate(node_disk_writes_completed_total{device=~\"mmcblk0|nvme0n1\"}[5m])",
+     "legendFormat": "écriture {{device}}"
+    },
+    {
+     "refId": "B",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds_prom}"
+     },
+     "expr": "rate(node_disk_read_time_seconds_total{device=~\"mmcblk0|nvme0n1\"}[5m]) / rate(node_disk_reads_completed_total{device=~\"mmcblk0|nvme0n1\"}[5m])",
+     "legendFormat": "lecture {{device}}"
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "s",
+     "custom": {
+      "drawStyle": "line",
+      "fillOpacity": 10,
+      "lineWidth": 1,
+      "stacking": {
+       "mode": "none"
+      },
+      "showPoints": "never"
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "table",
+     "placement": "right",
+     "calcs": [
+      "lastNotNull",
+      "max"
+     ]
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   }
+  },
+  {
+   "type": "row",
+   "title": "k3s",
+   "collapsed": false,
+   "gridPos": {
+    "h": 1,
+    "w": 24,
+    "x": 0,
+    "y": 9
+   },
+   "id": 5,
+   "panels": []
+  },
+  {
+   "type": "timeseries",
+   "title": "k3s : écritures lentes et arrêts (journal)",
+   "description": "La base de k3s (SQLite sur la carte SD) qui n'écrit plus à temps : au-delà, k3s perd son bail et redémarre (16 novembre).",
+   "id": 6,
+   "datasource": {
+    "type": "loki",
+    "uid": "${ds_loki}"
+   },
+   "gridPos": {
+    "h": 8,
+    "w": 12,
+    "x": 0,
+    "y": 10
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "type": "loki",
+      "uid": "${ds_loki}"
+     },
+     "expr": "sum(count_over_time({unit=\"k3s.service\"} |= \"Slow SQL\" [5m]))",
+     "legendFormat": "« Slow SQL » / 5 min",
+     "queryType": "range"
+    },
+    {
+     "refId": "B",
+     "datasource": {
+      "type": "loki",
+      "uid": "${ds_loki}"
+     },
+     "expr": "sum(count_over_time({unit=\"k3s.service\"} |= \"level=fatal\" [5m]))",
+     "legendFormat": "arrêt fatal",
+     "queryType": "range"
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "short",
+     "custom": {
+      "drawStyle": "bars",
+      "fillOpacity": 60,
+      "lineWidth": 1,
+      "stacking": {
+       "mode": "none"
+      },
+      "showPoints": "never"
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "table",
+     "placement": "right",
+     "calcs": [
+      "sum",
+      "max"
+     ]
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   }
+  },
+  {
+   "type": "timeseries",
+   "title": "Redémarrages et tués faute de mémoire (1 h)",
+   "description": "",
+   "id": 7,
+   "datasource": {
+    "type": "prometheus",
+    "uid": "${ds_prom}"
+   },
+   "gridPos": {
+    "h": 8,
+    "w": 12,
+    "x": 12,
+    "y": 10
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds_prom}"
+     },
+     "expr": "sum by (namespace, pod) (increase(kube_pod_container_status_restarts_total[1h])) > 0",
+     "legendFormat": "redémarrage {{namespace}}/{{pod}}"
+    },
+    {
+     "refId": "B",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds_prom}"
+     },
+     "expr": "sum by (namespace, pod) (increase(container_oom_events_total{container!=\"\"}[1h])) > 0",
+     "legendFormat": "OOM {{namespace}}/{{pod}}"
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "short",
+     "custom": {
+      "drawStyle": "bars",
+      "fillOpacity": 60,
+      "lineWidth": 1,
+      "stacking": {
+       "mode": "none"
+      },
+      "showPoints": "never"
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "table",
+     "placement": "right",
+     "calcs": [
+      "max"
+     ]
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   }
+  },
+  {
+   "type": "row",
+   "title": "Conteneurs",
+   "collapsed": false,
+   "gridPos": {
+    "h": 1,
+    "w": 24,
+    "x": 0,
+    "y": 18
+   },
+   "id": 8,
+   "panels": []
+  },
+  {
+   "type": "timeseries",
+   "title": "Mémoire par pod (working set)",
+   "description": "Ce que le noyau compte pour la limite du conteneur (OOMKilled au-delà).",
+   "id": 9,
+   "datasource": {
+    "type": "prometheus",
+    "uid": "${ds_prom}"
+   },
+   "gridPos": {
+    "h": 9,
+    "w": 12,
+    "x": 0,
+    "y": 19
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds_prom}"
+     },
+     "expr": "topk(10, sum by (namespace, pod) (container_memory_working_set_bytes{container!=\"\", container!=\"POD\"}))",
+     "legendFormat": "{{namespace}}/{{pod}}"
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "bytes",
+     "custom": {
+      "drawStyle": "line",
+      "fillOpacity": 10,
+      "lineWidth": 1,
+      "stacking": {
+       "mode": "none"
+      },
+      "showPoints": "never"
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "table",
+     "placement": "right",
+     "calcs": [
+      "lastNotNull",
+      "max"
+     ]
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   }
+  },
+  {
+   "type": "timeseries",
+   "title": "Mémoire / limite (%)",
+   "description": "100 % : le conteneur est tué (OOMKilled).",
+   "id": 10,
+   "datasource": {
+    "type": "prometheus",
+    "uid": "${ds_prom}"
+   },
+   "gridPos": {
+    "h": 9,
+    "w": 12,
+    "x": 12,
+    "y": 19
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds_prom}"
+     },
+     "expr": "100 * max by (namespace, pod) (container_memory_working_set_bytes{container!=\"\"} / (container_spec_memory_limit_bytes{container!=\"\"} > 0))",
+     "legendFormat": "{{namespace}}/{{pod}}"
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "percent",
+     "custom": {
+      "drawStyle": "line",
+      "fillOpacity": 10,
+      "lineWidth": 1,
+      "stacking": {
+       "mode": "none"
+      },
+      "showPoints": "never"
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "table",
+     "placement": "right",
+     "calcs": [
+      "lastNotNull",
+      "max"
+     ]
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   }
+  },
+  {
+   "type": "timeseries",
+   "title": "CPU par pod (cœurs)",
+   "description": "",
+   "id": 11,
+   "datasource": {
+    "type": "prometheus",
+    "uid": "${ds_prom}"
+   },
+   "gridPos": {
+    "h": 8,
+    "w": 12,
+    "x": 0,
+    "y": 28
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds_prom}"
+     },
+     "expr": "topk(8, sum by (namespace, pod) (rate(container_cpu_usage_seconds_total{container!=\"\"}[5m])))",
+     "legendFormat": "{{namespace}}/{{pod}}"
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "short",
+     "custom": {
+      "drawStyle": "line",
+      "fillOpacity": 10,
+      "lineWidth": 1,
+      "stacking": {
+       "mode": "none"
+      },
+      "showPoints": "never"
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "table",
+     "placement": "right",
+     "calcs": [
+      "lastNotNull",
+      "max"
+     ]
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   }
+  },
+  {
+   "type": "timeseries",
+   "title": "Disque par pod (écritures, lectures)",
+   "description": "",
+   "id": 12,
+   "datasource": {
+    "type": "prometheus",
+    "uid": "${ds_prom}"
+   },
+   "gridPos": {
+    "h": 8,
+    "w": 12,
+    "x": 12,
+    "y": 28
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds_prom}"
+     },
+     "expr": "topk(6, sum by (namespace, pod) (rate(container_fs_writes_bytes_total{container!=\"\"}[5m])))",
+     "legendFormat": "écrit {{namespace}}/{{pod}}"
+    },
+    {
+     "refId": "B",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "${ds_prom}"
+     },
+     "expr": "topk(6, sum by (namespace, pod) (rate(container_fs_reads_bytes_total{container!=\"\"}[5m])))",
+     "legendFormat": "lu {{namespace}}/{{pod}}"
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "Bps",
+     "custom": {
+      "drawStyle": "line",
+      "fillOpacity": 10,
+      "lineWidth": 1,
+      "stacking": {
+       "mode": "none"
+      },
+      "showPoints": "never"
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "table",
+     "placement": "right",
+     "calcs": [
+      "lastNotNull",
+      "max"
+     ]
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   }
+  }
+ ],
+ "annotations": {
+  "list": []
+ }
+}
